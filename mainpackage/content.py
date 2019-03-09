@@ -110,4 +110,20 @@ def regularized_model_selection(x_train, y_train, x_val, y_val, M, lambda_values
     :return:  tuple (w,train_err, val_err, regularization_lambda) representing model with the lowest validation error
     (w: model parameters, train_err, val_err: training and validation mean squared error, regularization_lambda: the best value of regularization coefficient)
     '''
-    pass
+    train_arr = []
+    for lambd in lambda_values:
+        w, err = regularized_least_squares(x_train, y_train, M, lambd)
+        train_arr.append((w,err,lambd))
+
+
+    err_val_arr = []
+    for w in train_arr:
+        err_val_arr.append(mean_squared_error(x_val, y_val, w[0]))
+
+    val_err = min(err_val_arr)
+
+    min_err_val_index = err_val_arr.index(val_err)
+
+    w, train_err, lambd = train_arr[min_err_val_index]
+
+    return (w, train_err, val_err, lambd)
