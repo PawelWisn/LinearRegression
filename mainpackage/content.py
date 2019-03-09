@@ -9,6 +9,7 @@
 import numpy as np
 from utils import polynomial
 
+
 def mean_squared_error(x, y, w):
     '''
     :param x: input vector Nx1
@@ -17,12 +18,18 @@ def mean_squared_error(x, y, w):
     :return: mean squared error between output y
     and model prediction for input x and parameters w
     '''
-    #mse = ((np.square(y - x)))/
+    # mse = ((np.square(y - x)))/
+    desMat = design_matrix(x, w.shape[0]-1)
+    modelPred = desMat @ w
+    Q = 0
+    for i in range(y.shape[0]):
+        Q += (y[i] - modelPred[i]) ** 2
+    return Q/x.shape[0]
 
-    pass
+    # pass
 
 
-def design_matrix(x_train,M):
+def design_matrix(x_train, M):
     '''
     :param x_train: input vector Nx1
     :param M: polynomial degree 0,1,2,...
@@ -30,10 +37,10 @@ def design_matrix(x_train,M):
     '''
     desMat = []
     for row in x_train:
-        desMat.append([row**i for i in range(M+1)])
-    desMat = np.reshape(desMat, (-1,M+1))
+        desMat.append([row ** i for i in range(M + 1)])
+    desMat = np.reshape(desMat, (-1, M + 1))
     return desMat
-    #pass
+    # pass
 
 
 def least_squares(x_train, y_train, M):
