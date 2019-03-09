@@ -18,15 +18,13 @@ def mean_squared_error(x, y, w):
     :return: mean squared error between output y
     and model prediction for input x and parameters w
     '''
-    # mse = ((np.square(y - x)))/
-    desMat = design_matrix(x, w.shape[0]-1)
+    desMat = design_matrix(x, w.shape[0] - 1)
     modelPred = desMat @ w
     Q = 0
     for i in range(y.shape[0]):
-        Q += (y[i] - modelPred[i]) ** 2
-    return Q/x.shape[0]
-
-    # pass
+        Q += (y[i] - desMat[i]@w) ** 2
+    mse = Q / x.shape[0]
+    return np.array(*mse)
 
 
 def design_matrix(x_train, M):
@@ -50,7 +48,11 @@ def least_squares(x_train, y_train, M):
     :param M: polynomial degree
     :return: tuple (w,err), where w are model parameters and err mean squared error of fitted polynomial
     '''
-    pass
+    desMat = design_matrix(x_train, M)
+
+    w = np.linalg.inv(desMat.transpose() @ desMat) @ desMat.transpose() @ y_train
+    err = mean_squared_error(x_train, y_train, w)
+    return (w, err)
 
 
 def regularized_least_squares(x_train, y_train, M, regularization_lambda):
@@ -61,7 +63,12 @@ def regularized_least_squares(x_train, y_train, M, regularization_lambda):
     :param regularization_lambda: regularization parameter
     :return: tuple (w,err), where w are model parameters and err mean squared error of fitted polynomial with l2 regularization
     '''
-    pass
+    desMat = design_matrix(x_train, M)
+
+    w = np.linalg.inv(desMat.transpose() @ desMat + (regularization_lambda * np.identity(M+1)))\
+        @ desMat.transpose() @ y_train
+    err = mean_squared_error(x_train, y_train, w)
+    return (w, err)
 
 
 def model_selection(x_train, y_train, x_val, y_val, M_values):
@@ -74,8 +81,23 @@ def model_selection(x_train, y_train, x_val, y_val, M_values):
     :return: tuple (w,train_err, val_err) representing model with the lowest validation error
     w: model parameters, train_err, val_err: training and validation mean squared error
     '''
-    pass
+    w_m_train_arr = []
+    err_m_train_arr = []
+    for m in M_values:
+        w, err = least_squares(x_train, y_train, m)
+        w_m_train_arr.append(w)
+        err_m_train_arr.append(err)
 
+    err_m_val_arr = []
+    for m in M_values:
+        err_m_val_arr.append(mean_squared_error(x_val, y_val, w_m_train_arr[m]))
+
+    min_err_val_index = err_m_val_arr.index(min(err_m_val_arr))
+
+    err_m_train = err_m_train_arr[min_err_val_index]
+    chosen_w = w_m_train_arr[min_err_val_index]
+
+    return (chosen_w, err_m_train, min(err_m_val_arr))
 
 def regularized_model_selection(x_train, y_train, x_val, y_val, M, lambda_values):
     '''
